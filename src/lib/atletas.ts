@@ -1,28 +1,39 @@
-import { mockAtletas, type Atleta } from "@/data/mockAtletas";
+import { createClient } from "./supabase/client";
+import type { Atleta } from "@/data/mockAtletas";
 
-const KEY = "lendarios_atletas";
+type AtletaRow = {
+  id: number;
+  nome: string;
+  posicao: string;
+  numero: number;
+  foto: string | null;
+};
 
-export function getAtletas(): Atleta[] {
-  if (typeof window === "undefined") return mockAtletas;
-  try {
-    const stored = localStorage.getItem(KEY);
-    if (!stored) {
-      localStorage.setItem(KEY, JSON.stringify(mockAtletas));
-      return mockAtletas;
-    }
-    return JSON.parse(stored) as Atleta[];
-  } catch {
-    return mockAtletas;
-  }
+function fromRow(row: AtletaRow): Atleta {
+  return { ...row, foto: row.foto ?? undefined };
 }
 
-export function saveAtleta(atleta: Omit<Atleta, "id">): void {
-  const list = getAtletas();
-  const novo: Atleta = { ...atleta, id: Date.now() };
-  localStorage.setItem(KEY, JSON.stringify([...list, novo]));
+export async function getAtletas(): Promise<Atleta[]> {
+  const supabase = createClient();
+  const { data, error } = await supabase
+    .from("atletas")
+    .select("id, nome, posicao, numero, foto")
+    .order("nome");
+  if (error || !data) return [];
+  return (data as AtletaRow[]).map(fromRow);
 }
 
-export function deleteAtleta(id: number): void {
-  const list = getAtletas().filter((a) => a.id !== id);
-  localStorage.setItem(KEY, JSON.stringify(list));
+export async function saveAtleta(atleta: Omit<Atleta, "id">): Promise<void> {
+  const supabase = createClient();
+  await supabase.from("atletas").insert({
+    nome: atleta.nome,
+    posicao: atleta.posicao,
+    numero: atleta.numero,
+    foto: atleta.foto ?? null,
+  });
+}
+
+export async function deleteAtleta(id: number): Promise<void> {
+  const supabase = createClient();
+  await supabase.from("atletas").delete().eq("id", id);
 }

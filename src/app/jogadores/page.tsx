@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { UserPlus, Trash2 } from "lucide-react";
 import { getAtletas, deleteAtleta } from "@/lib/atletas";
+import { useRole } from "@/lib/supabase/useRole";
 import type { Atleta } from "@/data/mockAtletas";
 
 const ACCENT_HEX = ["#E63946", "#F4A261", "#F5D547", "#2A9D8F", "#3A86FF", "#8338EC"];
@@ -22,14 +23,16 @@ function initials(name: string): string {
 
 export default function JogadoresPage() {
   const [atletas, setAtletas] = useState<Atleta[]>([]);
+  const { role } = useRole();
+  const isGestao = role === "gestao";
 
   useEffect(() => {
-    setAtletas(getAtletas());
+    getAtletas().then(setAtletas);
   }, []);
 
-  function handleDelete(id: number) {
-    deleteAtleta(id);
-    setAtletas(getAtletas());
+  async function handleDelete(id: number) {
+    await deleteAtleta(id);
+    getAtletas().then(setAtletas);
   }
 
   return (
@@ -48,26 +51,27 @@ export default function JogadoresPage() {
           Jogadores
         </h1>
 
-        <Link
-          href="/jogadores/novo"
-          style={{
-            display: "flex",
-            alignItems: "center",
-            gap: "8px",
-            fontFamily: "var(--font-body)",
-            fontSize: "14px",
-            fontWeight: 600,
-            color: "#fff",
-            backgroundColor: "var(--action-primary)",
-            borderRadius: "var(--radius-md)",
-            padding: "10px 20px",
-            textDecoration: "none",
-            transition: "background-color 0.15s",
-          }}
-        >
-          <UserPlus size={16} />
-          Cadastrar atleta
-        </Link>
+        {isGestao && (
+          <Link
+            href="/jogadores/novo"
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: "8px",
+              fontFamily: "var(--font-body)",
+              fontSize: "14px",
+              fontWeight: 600,
+              color: "#fff",
+              backgroundColor: "var(--action-primary)",
+              borderRadius: "var(--radius-md)",
+              padding: "10px 20px",
+              textDecoration: "none",
+            }}
+          >
+            <UserPlus size={16} />
+            Cadastrar atleta
+          </Link>
+        )}
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -87,7 +91,7 @@ export default function JogadoresPage() {
               }}
               className="group hover:[border-color:var(--border-default)] hover:[-webkit-transform:translateY(-2px)] hover:[transform:translateY(-2px)]"
             >
-              {/* Número da camisa */}
+              {/* Número */}
               <span
                 aria-hidden
                 style={{
@@ -105,26 +109,28 @@ export default function JogadoresPage() {
                 {atleta.numero}
               </span>
 
-              {/* Botão deletar */}
-              <button
-                onClick={() => handleDelete(atleta.id)}
-                style={{
-                  position: "absolute",
-                  bottom: "16px",
-                  right: "16px",
-                  background: "transparent",
-                  border: "none",
-                  cursor: "pointer",
-                  color: "var(--text-tertiary)",
-                  opacity: 0,
-                  transition: "opacity 0.15s",
-                  padding: "4px",
-                }}
-                className="group-hover:!opacity-100"
-                title="Remover atleta"
-              >
-                <Trash2 size={14} />
-              </button>
+              {/* Botão deletar — só gestão */}
+              {isGestao && (
+                <button
+                  onClick={() => handleDelete(atleta.id)}
+                  style={{
+                    position: "absolute",
+                    bottom: "16px",
+                    right: "16px",
+                    background: "transparent",
+                    border: "none",
+                    cursor: "pointer",
+                    color: "var(--text-tertiary)",
+                    opacity: 0,
+                    transition: "opacity 0.15s",
+                    padding: "4px",
+                  }}
+                  className="group-hover:!opacity-100"
+                  title="Remover atleta"
+                >
+                  <Trash2 size={14} />
+                </button>
+              )}
 
               {/* Avatar */}
               {atleta.foto ? (
@@ -159,7 +165,6 @@ export default function JogadoresPage() {
                 </div>
               )}
 
-              {/* Nome */}
               <p
                 style={{
                   fontFamily: "var(--font-display)",
@@ -173,7 +178,6 @@ export default function JogadoresPage() {
                 {atleta.nome}
               </p>
 
-              {/* Posição */}
               <p
                 style={{
                   fontFamily: "var(--font-body)",

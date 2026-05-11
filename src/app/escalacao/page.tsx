@@ -302,7 +302,7 @@ export default function EscalacaoPage() {
   const [exporting, setExporting] = useState(false);
   const courtRef = useRef<HTMLDivElement>(null);
 
-  useEffect(() => { setAtletas(getAtletas()); }, []);
+  useEffect(() => { getAtletas().then(setAtletas); }, []);
 
   const assignedIds = new Set(
     Object.values(lineup).filter(Boolean).map((a) => a!.id)

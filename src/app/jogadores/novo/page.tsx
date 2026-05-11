@@ -1,10 +1,11 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useRef, useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { ArrowLeft, Camera } from "lucide-react";
 import { saveAtleta } from "@/lib/atletas";
+import { useRole } from "@/lib/supabase/useRole";
 
 const POSICOES = ["Levantador(a)", "Oposto(a)", "Ponteiro(a)", "Central", "Líbero"];
 
@@ -34,13 +35,19 @@ const labelStyle: React.CSSProperties = {
 
 export default function NovoAtletaPage() {
   const router = useRouter();
+  const { role, loading } = useRole();
   const fileRef = useRef<HTMLInputElement>(null);
-
   const [nome, setNome] = useState("");
   const [numero, setNumero] = useState("");
   const [posicao, setPosicao] = useState("");
   const [foto, setFoto] = useState<string | undefined>();
   const [error, setError] = useState("");
+
+  useEffect(() => {
+    if (!loading && role !== "gestao") router.replace("/escalacao");
+  }, [role, loading, router]);
+
+  if (loading || role !== "gestao") return null;
 
   function handleFoto(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
