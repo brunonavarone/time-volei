@@ -21,6 +21,8 @@ export default function Navbar() {
 
   if (pathname === "/login") return null;
 
+  const isAuthenticated = role !== null;
+
   async function handleLogout() {
     const supabase = createClient();
     await supabase.auth.signOut();
@@ -106,28 +108,30 @@ export default function Navbar() {
             </span>
           )}
 
-          <button
-            onClick={handleLogout}
-            title="Sair"
-            style={{
-              display: "flex",
-              alignItems: "center",
-              gap: "5px",
-              fontFamily: "var(--font-body)",
-              fontSize: "13px",
-              fontWeight: 500,
-              color: "var(--text-tertiary)",
-              backgroundColor: "transparent",
-              border: "none",
-              borderRadius: "var(--radius-md)",
-              padding: "6px 10px",
-              cursor: "pointer",
-              transition: "color 0.15s",
-            }}
-          >
-            <LogOut size={14} />
-            Sair
-          </button>
+          {isAuthenticated && (
+            <button
+              onClick={handleLogout}
+              title="Sair"
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: "5px",
+                fontFamily: "var(--font-body)",
+                fontSize: "13px",
+                fontWeight: 500,
+                color: "var(--text-tertiary)",
+                backgroundColor: "transparent",
+                border: "none",
+                borderRadius: "var(--radius-md)",
+                padding: "6px 10px",
+                cursor: "pointer",
+                transition: "color 0.15s",
+              }}
+            >
+              <LogOut size={14} />
+              Sair
+            </button>
+          )}
         </div>
       </div>
     </header>
