@@ -19,6 +19,8 @@ export default function Navbar() {
   const router = useRouter();
   const { role } = useRole();
 
+  if (pathname === "/login") return null;
+
   async function handleLogout() {
     const supabase = createClient();
     await supabase.auth.signOut();
